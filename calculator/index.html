@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalcLab</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/mathjs@11.6.0/lib/browser/math.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Bitcount+Prop+Single+Ink:wght@100..900&family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Dancing+Script:wght@400..700&family=Georama:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Playwrite+AU+TAS:wght@100..400&family=Playwrite+DE+SAS:wght@100..400&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Share+Tech&family=Smooch+Sans:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">
+            <i class="fas fa-calculator"></i>
+            <span> CalcLab</span>
+        </div>
+       
+        <div class="loading-subtitle">
+            <h3>Advanced Scientific Calculator</h3>
+        </div>
+       
+        <div class="loading-progress">
+            <div class="loading-progress-bar" id="loadingProgressBar"></div>
+        </div>
+       
+        <div class="loading-status" id="loadingStatus">
+            Initializing advanced calculator...
+        </div>
+       
+        <div class="loading-features" id="loadingFeatures">
+        </div>
+    </div>
+   
+    <div id="notificationContainer"></div>
+   
+    <div class="container" id="mainContainer">
+        <header>
+            <div class="logo">
+                <i class="fas fa-calculator"></i>
+                <span> CalcLab</span>
+            </div>
+           
+            <div class="nav-tabs">
+                <button class="tab-btn active" data-tab="calculator">
+                    <i class="fas fa-calculator"></i> Calculator
+                </button>
+                <button class="tab-btn" data-tab="matrix">
+                    <i class="fas fa-th"></i> Matrix
+                </button>
+                <button class="tab-btn" data-tab="equations">
+                    <i class="fas fa-equals"></i> Equations
+                </button>
+                <button class="tab-btn" data-tab="limits">
+                    <i class="fas fa-infinity"></i> Calculus
+                </button>
+                <button class="tab-btn" data-tab="stats">
+                    <i class="fas fa-chart-bar"></i> Stats
+                </button>
+                <button class="tab-btn" data-tab="converter">
+                    <i class="fas fa-exchange-alt"></i> Converter
+                </button>
+            </div>
+           
+            <div class="mode-toggle">
+                <button class="mode-btn active" data-mode="deg">DEG</button>
+                <button class="mode-btn" data-mode="rad">RAD</button>
+                <button class="mode-btn" data-mode="grad">GRAD</button>
+            </div>
+        </header>
+       
+        <main>
+            <div id="calculator" class="tab-content active">
+                <div class="calculator-container">
+                    <div class="calculator">
+                        <div class="display-container">
+                            <div class="display">
+                                <div class="expression" id="expression"></div>
+                                <div class="display-value" id="display">0</div>
+                            </div>
+                        </div>
+                       
+                        <div class="buttons-grid" id="buttons">
+                        </div>
+                    </div>
+                   
+                    <div class="history-panel">
+                        <div class="panel-title">
+                            <h2><i class="fas fa-history"></i> History</h2>
+                            <button class="clear-history" id="clearHistory">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                       
+                        <div class="history-list" id="historyList">
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+            <div id="matrix" class="tab-content">
+                <div class="matrix-container">
+                    <div class="matrix-box">
+                        <h2><i class="fas fa-th"></i> Matrix A</h2>
+                        <div class="matrix-controls">
+                            <div class="matrix-control">
+                                <label>Rows:</label>
+                                <input type="number" id="rowsA" min="1" max="6" value="2" class="matrix-size">
+                            </div>
+                            <div class="matrix-control">
+                                <label>Columns:</label>
+                                <input type="number" id="colsA" min="1" max="6" value="2" class="matrix-size">
+                            </div>
+                            <button class="matrix-op-btn" id="generateA">Generate</button>
+                            <button class="matrix-op-btn" id="clearA">Clear</button>
+                        </div>
+                        <div class="matrix-grid" id="matrixAGrid"></div>
+                    </div>
+                   
+                    <div class="matrix-box">
+                        <h2><i class="fas fa-th"></i> Matrix B</h2>
+                        <div class="matrix-controls">
+                            <div class="matrix-control">
+                                <label>Rows:</label>
+                                <input type="number" id="rowsB" min="1" max="6" value="2" class="matrix-size">
+                            </div>
+                            <div class="matrix-control">
+                                <label>Columns:</label>
+                                <input type="number" id="colsB" min="1" max="6" value="2" class="matrix-size">
+                            </div>
+                            <button class="matrix-op-btn" id="generateB">Generate</button>
+                            <button class="matrix-op-btn" id="clearB">Clear</button>
+                        </div>
+                        <div class="matrix-grid" id="matrixBGrid"></div>
+                    </div>
+                   
+                    <div class="matrix-box">
+                        <h2><i class="fas fa-calculator"></i> Operations</h2>
+                        <div class="matrix-operations">
+                            <button class="matrix-op-btn" data-op="add">A + B</button>
+                            <button class="matrix-op-btn" data-op="subtract">A - B</button>
+                            <button class="matrix-op-btn" data-op="multiply">A × B</button>
+                            <button class="matrix-op-btn" data-op="transposeA">Aᵀ</button>
+                            <button class="matrix-op-btn" data-op="transposeB">Bᵀ</button>
+                            <button class="matrix-op-btn" data-op="determinantA">det(A)</button>
+                            <button class="matrix-op-btn" data-op="determinantB">det(B)</button>
+                            <button class="matrix-op-btn" data-op="scalarA">k × A</button>
+                            <button class="matrix-op-btn" data-op="scalarB">k × B</button>
+                        </div>
+                        <div class="input-group">
+                            <label>Scalar Value (k):</label>
+                            <input type="number" id="scalarValue" value="2" class="matrix-cell">
+                        </div>
+                        <div class="matrix-result" id="matrixResult">
+                            <pre>Result will appear here...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+            <div id="equations" class="tab-content">
+                <div class="equation-container">
+                    <div class="matrix-box">
+                        <h2><i class="fas fa-equals"></i> Linear Equations</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">Solve system of linear equations (2×2 or 3×3)</p>
+                       
+                        <div class="equation-type-selector">
+                            <button class="eq-type-btn active" data-eq-type="2x2">2×2 System</button>
+                            <button class="eq-type-btn" data-eq-type="3x3">3×3 System</button>
+                            <button class="eq-type-btn" data-eq-type="quadratic">Quadratic</button>
+                        </div>
+                       
+                        <div class="equation-input" id="eq2x2">
+                            <div class="equation-row">
+                                <input type="number" class="equation-input-field eq2x2" placeholder="a₁" value="1">
+                                <span>x +</span>
+                                <input type="number" class="equation-input-field eq2x2" placeholder="b₁" value="1">
+                                <span>y =</span>
+                                <input type="number" class="equation-input-field eq2x2" placeholder="c₁" value="5">
+                            </div>
+                            <div class="equation-row">
+                                <input type="number" class="equation-input-field eq2x2" placeholder="a₂" value="1">
+                                <span>x +</span>
+                                <input type="number" class="equation-input-field eq2x2" placeholder="b₂" value="-1">
+                                <span>y =</span>
+                                <input type="number" class="equation-input-field eq2x2" placeholder="c₂" value="1">
+                            </div>
+                        </div>
+                       
+                        <div class="equation-input" id="eq3x3" style="display: none;">
+                            <div class="equation-row">
+                                <input type="number" class="equation-input-field eq3x3" id="a11" placeholder="a₁" value="2">
+                                <span>x +</span>
+                                <input type="number" class="equation-input-field eq3x3" id="a12" placeholder="b₁" value="1">
+                                <span>y +</span>
+                                <input type="number" class="equation-input-field eq3x3" id="a13" placeholder="c₁" value="1">
+                                <span>z =</span>
+                                <input type="number" class="equation-input-field eq3x3" id="d1" placeholder="d₁" value="8">
+                            </div>
+                            <div class="equation-row">
+                                <input type="number" class="equation-input-field eq3x3" id="a21" placeholder="a₂" value="1">
+                                <span>x +</span>
+                                <input type="number" class="equation-input-field eq3x3" id="a22" placeholder="b₂" value="3">
+                                <span>y +</span>
+                                <input type="number" class="equation-input-field eq3x3" id="a23" placeholder="c₂" value="2">
+                                <span>z =</span>
+                                <input type="number" class="equation-input-field eq3x3" id="d2" placeholder="d₂" value="10">
+                            </div>
+                            <div class="equation-row">
+                                <input type="number" class="equation-input-field eq3x3" id="a31" placeholder="a₃" value="1">
+                                <span>x +</span>
+                                <input type="number" class="equation-input-field eq3x3" id="a32" placeholder="b₃" value="1">
+                                <span>y +</span>
+                                <input type="number" class="equation-input-field eq3x3" id="a33" placeholder="c₃" value="4">
+                                <span>z =</span>
+                                <input type="number" class="equation-input-field eq3x3" id="d3" placeholder="d₃" value="3">
+                            </div>
+                        </div>
+                       
+                        <div class="equation-input" id="eqQuadratic" style="display: none;">
+                            <div class="equation-row">
+                                <input type="number" class="equation-input-field" id="quadA" placeholder="a" value="1">
+                                <span>x² +</span>
+                                <input type="number" class="equation-input-field" id="quadB" placeholder="b" value="-3">
+                                <span>x +</span>
+                                <input type="number" class="equation-input-field" id="quadC" placeholder="c" value="2">
+                                <span>= 0</span>
+                            </div>
+                        </div>
+                       
+                        <button class="solve-btn" id="solveEquation">Solve</button>
+                       
+                        <div class="equation-result" id="equationResult">
+                            <p>Solution will appear here...</p>
+                        </div>
+                    </div>
+                   
+                    <div class="matrix-box">
+                        <h2><i class="fas fa-infinity"></i> Equation Types</h2>
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: var(--text-secondary); margin-bottom: 10px;">Examples of solvable equations:</p>
+                            <div class="solution-step">
+                                <strong>Linear System:</strong><br>
+                                <span style="color: var(--accent3)">2x + 3y = 7</span><br>
+                                <span style="color: var(--accent3)">x - y = 1</span>
+                            </div>
+                            <div class="solution-step">
+                                <strong>Quadratic:</strong><br>
+                                <span style="color: var(--accent3)">x² - 5x + 6 = 0</span>
+                            </div>
+                            <div class="solution-step">
+                                <strong>Cubic:</strong><br>
+                                <span style="color: var(--accent3)">x³ - 6x² + 11x - 6 = 0</span>
+                            </div>
+                        </div>
+                       
+                        <div class="input-group">
+                            <label>Enter Custom Equation:</label>
+                            <input type="text" id="customEquation" placeholder="e.g., x^2 + 2*x - 8 = 0" class="equation-input-field">
+                        </div>
+                        <button class="solve-btn" id="solveCustom">Solve Custom</button>
+                    </div>
+                </div>
+            </div>
+           
+            <div id="limits" class="tab-content">
+                <div class="limits-container">
+                    <div class="matrix-box">
+                        <h2><i class="fas fa-infinity"></i> Limit Calculator</h2>
+                        <div class="limit-input-group">
+                            <div class="limit-input-row">
+                                <label>Function f(x) =</label>
+                                <input type="text" id="limitFunction" class="limit-input" value="sin(x)/x" placeholder="e.g., sin(x)/x">
+                            </div>
+                            <div class="limit-input-row">
+                                <label>As x →</label>
+                                <input type="text" id="limitPoint" class="limit-input" value="0" placeholder="e.g., 0, ∞, -∞">
+                            </div>
+                           
+                            <div class="limit-direction">
+                                <label>Direction:</label>
+                                <button class="limit-dir-btn active" data-direction="both">Both</button>
+                                <button class="limit-dir-btn" data-direction="left">Left (x→a⁻)</button>
+                                <button class="limit-dir-btn" data-direction="right">Right (x→a⁺)</button>
+                            </div>
+                        </div>
+                       
+                        <button class="solve-btn" id="calculateLimit">Calculate Limit</button>
+                       
+                        <div class="limit-result" id="limitResult">
+                            <p>Limit result will appear here...</p>
+                        </div>
+                    </div>
+                   
+                    <div class="matrix-box">
+                        <h2><i class="fas fa-calculator"></i> Derivative Calculator</h2>
+                        <div class="limit-input-group">
+                            <div class="limit-input-row">
+                                <label>Function f(x) =</label>
+                                <input type="text" id="derivativeFunction" class="limit-input" value="x^2" placeholder="e.g., x^2, sin(x), log(x)">
+                            </div>
+                            <div class="limit-input-row">
+                                <label>With respect to:</label>
+                                <input type="text" id="derivativeVar" class="limit-input" value="x" placeholder="Variable">
+                            </div>
+                            <div class="limit-input-row">
+                                <label>Order (nth derivative):</label>
+                                <input type="number" id="derivativeOrder" class="limit-input" value="1" min="1" max="10">
+                            </div>
+                        </div>
+                       
+                        <button class="solve-btn" id="calculateDerivative">Calculate Derivative</button>
+                       
+                        <div class="limit-result" id="derivativeResult">
+                            <p>Derivative result will appear here...</p>
+                        </div>
+                    </div>
+                   
+                    <div class="matrix-box">
+                        <h2><i class="fas fa-integral"></i> Integral Calculator</h2>
+                        <div class="limit-input-group">
+                            <div class="limit-input-row">
+                                <label>Function f(x) =</label>
+                                <input type="text" id="integralFunction" class="limit-input" value="x^2" placeholder="e.g., x^2, sin(x), e^x">
+                            </div>
+                            <div class="limit-input-row">
+                                <label>From:</label>
+                                <input type="text" id="integralFrom" class="limit-input" value="0" placeholder="Lower bound">
+                                <label>To:</label>
+                                <input type="text" id="integralTo" class="limit-input" value="1" placeholder="Upper bound">
+                            </div>
+                            <div class="limit-input-row">
+                                <label>With respect to:</label>
+                                <input type="text" id="integralVar" class="limit-input" value="x" placeholder="Variable">
+                            </div>
+                        </div>
+                       
+                        <button class="solve-btn" id="calculateIntegral">Calculate Integral</button>
+                       
+                        <div class="limit-result" id="integralResult">
+                            <p>Integral result will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+            <div id="stats" class="tab-content">
+                <div class="stats-container">
+                    <div class="matrix-box">
+                        <h2><i class="fas fa-chart-bar"></i> Data Analysis</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 10px;">Enter numbers separated by commas, spaces, or line breaks:</p>
+                        <textarea class="data-input-area" id="dataInput" placeholder="Example: 1, 2, 3, 4, 5 Or: 1 2 3 4 5 Or: 1 2 3 4 5">1, 2, 3, 4, 5, 6, 7, 8, 9, 10</textarea>
+                       
+                        <div class="matrix-operations">
+                            <button class="calc-btn" data-stat="basic">Basic Stats</button>
+                            <button class="calc-btn" data-stat="advanced">Advanced Stats</button>
+                            <button class="calc-btn" data-stat="frequency">Frequency</button>
+                            <button class="calc-btn" data-stat="correlation">Correlation</button>
+                        </div>
+                       
+                        <div class="stats-result" id="statsResult">
+                            <div class="stats-results" id="statsResults">
+                            </div>
+                        </div>
+                    </div>
+                   
+                    <div class="matrix-box">
+                        <h2><i class="fas fa-chart-pie"></i> Probability</h2>
+                        <div class="converter-form">
+                            <div class="input-group">
+                                <label>Probability Distribution:</label>
+                                <select id="probabilityDist">
+                                    <option value="normal">Normal Distribution</option>
+                                    <option value="binomial">Binomial Distribution</option>
+                                    <option value="poisson">Poisson Distribution</option>
+                                    <option value="uniform">Uniform Distribution</option>
+                                </select>
+                            </div>
+                           
+                            <div id="normalParams">
+                                <div class="input-group">
+                                    <label>Mean (μ):</label>
+                                    <input type="number" id="normalMean" value="0" step="0.1">
+                                </div>
+                                <div class="input-group">
+                                    <label>Standard Deviation (σ):</label>
+                                    <input type="number" id="normalStd" value="1" step="0.1" min="0.1">
+                                </div>
+                                <div class="input-group">
+                                    <label>x value:</label>
+                                    <input type="number" id="normalX" value="0" step="0.1">
+                                </div>
+                            </div>
+                           
+                            <div id="binomialParams" style="display: none;">
+                                <div class="input-group">
+                                    <label>Number of trials (n):</label>
+                                    <input type="number" id="binomN" value="10" min="1">
+                                </div>
+                                <div class="input-group">
+                                    <label>Probability of success (p):</label>
+                                    <input type="number" id="binomP" value="0.5" min="0" max="1" step="0.1">
+                                </div>
+                                <div class="input-group">
+                                    <label>Number of successes (k):</label>
+                                    <input type="number" id="binomK" value="5" min="0">
+                                </div>
+                            </div>
+                           
+                            <button class="calc-btn" id="calculateProbability">Calculate Probability</button>
+                           
+                            <div class="result-box" id="probabilityResult">
+                                Result will appear here...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+            <div id="converter" class="tab-content">
+                <div class="converter-container">
+                    <div class="converter-box">
+                        <div class="converter-title">
+                            <i class="fas fa-ruler"></i>
+                            <h2>Length Converter</h2>
+                        </div>
+                        <div class="converter-form">
+                            <div class="input-group">
+                                <label>From:</label>
+                                <select id="lengthFrom">
+                                    <option value="meter">Meter</option>
+                                    <option value="kilometer">Kilometer</option>
+                                    <option value="centimeter">Centimeter</option>
+                                    <option value="millimeter">Millimeter</option>
+                                    <option value="mile">Mile</option>
+                                    <option value="yard">Yard</option>
+                                    <option value="foot">Foot</option>
+                                    <option value="inch">Inch</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>To:</label>
+                                <select id="lengthTo">
+                                    <option value="meter">Meter</option>
+                                    <option value="kilometer">Kilometer</option>
+                                    <option value="centimeter">Centimeter</option>
+                                    <option value="millimeter">Millimeter</option>
+                                    <option value="mile">Mile</option>
+                                    <option value="yard">Yard</option>
+                                    <option value="foot">Foot</option>
+                                    <option value="inch">Inch</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Value:</label>
+                                <input type="number" id="lengthValue" value="1" step="0.01">
+                            </div>
+                            <button class="convert-btn" id="convertLength">Convert</button>
+                            <div class="result-box" id="lengthResult">1 meter = 100 centimeter</div>
+                        </div>
+                    </div>
+                   
+                    <div class="converter-box">
+                        <div class="converter-title">
+                            <i class="fas fa-thermometer-half"></i>
+                            <h2>Temperature Converter</h2>
+                        </div>
+                        <div class="converter-form">
+                            <div class="input-group">
+                                <label>From:</label>
+                                <select id="tempFrom">
+                                    <option value="celsius">Celsius</option>
+                                    <option value="fahrenheit">Fahrenheit</option>
+                                    <option value="kelvin">Kelvin</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>To:</label>
+                                <select id="tempTo">
+                                    <option value="celsius">Celsius</option>
+                                    <option value="fahrenheit">Fahrenheit</option>
+                                    <option value="kelvin">Kelvin</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Value:</label>
+                                <input type="number" id="tempValue" value="0" step="0.1">
+                            </div>
+                            <button class="convert-btn" id="convertTemp">Convert</button>
+                            <div class="result-box" id="tempResult">0 °C = 32 °F</div>
+                        </div>
+                    </div>
+                   
+                    <div class="converter-box">
+                        <div class="converter-title">
+                            <i class="fas fa-weight-hanging"></i>
+                            <h2>Weight Converter</h2>
+                        </div>
+                        <div class="converter-form">
+                            <div class="input-group">
+                                <label>From:</label>
+                                <select id="weightFrom">
+                                    <option value="kilogram">Kilogram</option>
+                                    <option value="gram">Gram</option>
+                                    <option value="milligram">Milligram</option>
+                                    <option value="pound">Pound</option>
+                                    <option value="ounce">Ounce</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>To:</label>
+                                <select id="weightTo">
+                                    <option value="kilogram">Kilogram</option>
+                                    <option value="gram">Gram</option>
+                                    <option value="milligram">Milligram</option>
+                                    <option value="pound">Pound</option>
+                                    <option value="ounce">Ounce</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Value:</label>
+                                <input type="number" id="weightValue" value="1" step="0.01">
+                            </div>
+                            <button class="convert-btn" id="convertWeight">Convert</button>
+                            <div class="result-box" id="weightResult">1 kg = 1000 g</div>
+                        </div>
+                    </div>
+                   
+                    <div class="converter-box">
+                        <div class="converter-title">
+                            <i class="fas fa-flask"></i>
+                            <h2>Scientific Constants</h2>
+                        </div>
+                        <div class="converter-form">
+                            <div class="input-group">
+                                <label>Select Constant:</label>
+                                <select id="constantSelect">
+                                    <option value="pi">π (Pi) - 3.141592653589793</option>
+                                    <option value="e">e (Euler's Number) - 2.718281828459045</option>
+                                    <option value="c">Speed of Light - 299792458 m/s</option>
+                                    <option value="g">Gravity (Earth) - 9.80665 m/s²</option>
+                                    <option value="h">Planck Constant - 6.62607015e-34 J·s</option>
+                                    <option value="avogadro">Avogadro's Number - 6.02214076e23 mol⁻¹</option>
+                                    <option value="boltzmann">Boltzmann Constant - 1.380649e-23 J/K</option>
+                                    <option value="electron_mass">Electron Mass - 9.10938356e-31 kg</option>
+                                    <option value="proton_mass">Proton Mass - 1.6726219e-27 kg</option>
+                                    <option value="neutron_mass">Neutron Mass - 1.674927471e-27 kg</option>
+                                </select>
+                            </div>
+                            <button class="convert-btn" id="useConstant">Use in Calculator</button>
+                            <div class="result-box" id="constantResult">Select a constant</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+       
+       
+    </div>
+
+    <script src="calc.js"></script>
+</body>
+</html>
