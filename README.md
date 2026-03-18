@@ -50,4 +50,4 @@ A modern **Scientific Calculator** built with **HTML, CSS, and Vanilla JavaScrip
 
 
 https://calculaator-project-git-main-a-karou-1663s-projects.vercel.app
-<script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
+
