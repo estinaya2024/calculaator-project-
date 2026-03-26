@@ -11,7 +11,7 @@ A modern **Scientific Calculator** built with **HTML, CSS, and  JavaScript**, fe
 
 ---
 
-## ✨ Features
+## Features
 
 - **Scientific Mode**: Trigonometry, logarithms, exponentials, and more.
 - **Matrix Operations**: Add, subtract, multiply, transpose, and calculate determinants/eigenvalues for matrices up to 3x3.
@@ -33,7 +33,7 @@ A modern **Scientific Calculator** built with **HTML, CSS, and  JavaScript**, fe
 - **[Font Awesome](https://fontawesome.com/)**: High-quality UI icons.
 - **Google Fonts**: Inter and IBM Plex Mono for optimal readability.
 
-## 🚀 Getting Started
+##  Getting Started
 
 1. Clone the repository:
    ```bash
@@ -42,11 +42,11 @@ A modern **Scientific Calculator** built with **HTML, CSS, and  JavaScript**, fe
 2. Open `calculator/index.html` in any modern web browser.
 3. Start computing!
 
-## 📝 Usage Notes
+##  Usage Notes
 
 - Switching between **Basic** and **Scientific** modes is done via the "Scientific" button in the calculator tab.
 - Matrix sizes can be adjusted dynamically before generating the grids.
 - Calculations are saved in your browser's `localStorage`, allowing you to keep your history across sessions.
 
 ---
-*Created by **Ayaka Karou** as part of my frontend development journey.*
+*Created by **Aya Karou** as part of my frontend development journey.*
