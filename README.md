@@ -1,10 +1,9 @@
 <div align="center">
 
-# 🧮 CALCLAB — Scientific Calculator Web App
+#  CALCLAB — Scientific Calculator Web App
 
-⚡ Fast • 🎯 Accurate • 🧠 Smart  
 
-A modern **Scientific Calculator** built with **HTML, CSS, and Vanilla JavaScript**, featuring advanced math, matrix operations, and probability calculations — all in your browser.
+A modern **Scientific Calculator** built with **HTML, CSS, and  JavaScript**, featuring advanced math, matrix operations, and probability calculations — all in your browser.
 
 [Live Demo](https://calculaator-project-git-main-a-karou-1663s-projects.vercel.app)
 
@@ -27,8 +26,8 @@ A modern **Scientific Calculator** built with **HTML, CSS, and Vanilla JavaScrip
 
 ## 🛠️ Built With
 
-- **HTML5/CSS3**: Clean semantic structure and responsive vanilla CSS design.
-- **JavaScript (ES6+)**: Core logic and DOM manipulation.
+- **HTML5/CSS**: Clean semantic structure and responsive vanilla CSS design.
+- **JavaScript **: Core logic and DOM manipulation.
 - **[Math.js](https://mathjs.org/)**: Powerful library for advanced mathematical evaluations.
 - **[Chart.js](https://www.chartjs.org/)**: Used for the interactive graphing module.
 - **[Font Awesome](https://fontawesome.com/)**: High-quality UI icons.
