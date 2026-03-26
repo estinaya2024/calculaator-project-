@@ -1,75 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const loadingScreen = document.getElementById('loadingScreen');
-    const mainContainer = document.getElementById('mainContainer');
-    const progressBar = document.getElementById('loadingProgressBar');
-    const loadingStatus = document.getElementById('loadingStatus');
-    const loadingFeatures = document.getElementById('loadingFeatures');
-   
-    const features = [
-        "Scientific Calculator", "Matrix Operations", "Equation Solver",
-        "3×3 System Solver", "Calculus Tools", "Statistics & Probability",
-        "Unit Converter", "History Tracking", "Keyboard Support",
-        "Dark Theme", "Responsive Design", "Real-time Calculations"
-    ];
-   
-    let progress = 0;
-    let featureIndex = 0;
-   
-    function showNextFeature() {
-        if (featureIndex < features.length) {
-            const featureTag = document.createElement('div');
-            featureTag.className = 'feature-tag';
-            featureTag.textContent = features[featureIndex];
-            featureTag.style.animationDelay = `${featureIndex * 100}ms`;
-            loadingFeatures.appendChild(featureTag);
-            featureIndex++;
-            setTimeout(showNextFeature, 100);
-        }
-    }
-   
-    const statusMessages = [
-        "Initializing CalcLab...",
-        "Loading advanced calculator...",
-        "Setting up scientific calculator...",
-        "Initializing matrix operations...",
-        "Configuring equation solver...",
-        "Loading 3×3 system algorithms...",
-        "Setting up calculus tools...",
-        "Preparing statistics module...",
-        "Loading unit converter...",
-        "Finalizing CalcLab..."
-    ];
-   
-    let statusIndex = 0;
-   
-    const interval = setInterval(() => {
-        progress += Math.random() * 8 + 2;
-        if (progress > 100) progress = 100;
-        progressBar.style.width = `${progress}%`;
-       
-        if (progress >= (statusIndex + 1) * (100 / statusMessages.length)) {
-            if (statusIndex < statusMessages.length) {
-                loadingStatus.textContent = statusMessages[statusIndex];
-                statusIndex++;
-            }
-        }
-       
-        if (progress >= 30 && featureIndex === 0) {
-            showNextFeature();
-        }
-       
-        if (progress >= 100) {
-            clearInterval(interval);
-            loadingStatus.textContent = "Ready! Launching CalcLab...";
-           
-            setTimeout(() => {
-                loadingScreen.classList.add('hidden');
-                mainContainer.classList.add('loaded');
-                initCalculator();
-                showNotification('CalcLab Loaded!', 'success');
-            }, 800);
-        }
-    }, 100);
+    showNotification('CalcLab Ready', 'info');
    
     function showNotification(message, type = 'info') {
         const container = document.getElementById('notificationContainer');
@@ -128,8 +58,8 @@ document.addEventListener('DOMContentLoaded', function() {
             firstOperand: null,
             waitingForSecondOperand: false,
             operator: null,
-            memory: 0,
-            history: [],
+            memory: parseFloat(localStorage.getItem('calcMemory')) || 0,
+            history: JSON.parse(localStorage.getItem('calcHistory')) || [],
             previousAnswer: 0
         };
        
@@ -139,83 +69,108 @@ document.addEventListener('DOMContentLoaded', function() {
         const historyListElement = document.getElementById('historyList');
         const clearHistoryButton = document.getElementById('clearHistory');
        
+        let isScientificMode = false;
+        let isSecondFunction = false;
+        let isDegrees = true;
+        
         const buttonConfig = [
-            { text: '2nd', class: 'mode', action: 'secondFunction' },
-            { text: 'π', class: 'const', action: 'pi' },
-            { text: 'e', class: 'const', action: 'e' },
-            { text: 'C', class: 'clear', action: 'clear' },
-            { text: 'CE', class: 'clear', action: 'clearEntry' },
-            { text: '⌫', class: 'clear', action: 'backspace' },
-            { text: '%', class: 'operator', action: 'percent' },
-            { text: '(', class: 'function', action: 'parenthesis', value: '(' },
-            { text: ')', class: 'function', action: 'parenthesis', value: ')' },
-            { text: '÷', class: 'operator', action: 'operator', value: '/' },
-           
-            { text: 'x²', class: 'function', action: 'power', value: '2' },
-            { text: 'x³', class: 'function', action: 'power', value: '3' },
-            { text: 'xʸ', class: 'function', action: 'power', value: '^' },
-            { text: '10ˣ', class: 'function', action: 'tenPower' },
-            { text: 'eˣ', class: 'function', action: 'ePower' },
-            { text: '√', class: 'function', action: 'sqrt' },
-            { text: '∛', class: 'function', action: 'cbrt' },
-            { text: '1/x', class: 'function', action: 'reciprocal' },
-            { text: '|x|', class: 'function', action: 'abs' },
-            { text: 'ANS', class: 'memory', action: 'answer' },
-           
-            { text: 'sin', class: 'function', action: 'sin' },
-            { text: 'cos', class: 'function', action: 'cos' },
-            { text: 'tan', class: 'function', action: 'tan' },
-            { text: '7', class: '', action: 'number', value: '7' },
-            { text: '8', class: '', action: 'number', value: '8' },
-            { text: '9', class: '', action: 'number', value: '9' },
-            { text: '×', class: 'operator', action: 'operator', value: '*' },
-            { text: 'MC', class: 'memory', action: 'memoryClear' },
-            { text: 'MR', class: 'memory', action: 'memoryRecall' },
-            { text: 'M+', class: 'memory', action: 'memoryAdd' },
-           
-            { text: 'sin⁻¹', class: 'function', action: 'asin' },
-            { text: 'cos⁻¹', class: 'function', action: 'acos' },
-            { text: 'tan⁻¹', class: 'function', action: 'atan' },
-            { text: '4', class: '', action: 'number', value: '4' },
-            { text: '5', class: '', action: 'number', value: '5' },
-            { text: '6', class: '', action: 'number', value: '6' },
-            { text: '-', class: 'operator', action: 'operator', value: '-' },
-            { text: 'M-', class: 'memory', action: 'memorySubtract' },
-            { text: 'MS', class: 'memory', action: 'memoryStore' },
-            { text: 'sinh', class: 'function', action: 'sinh' },
-           
-            { text: 'cosh', class: 'function', action: 'cosh' },
-            { text: 'tanh', class: 'function', action: 'tanh' },
-            { text: 'log', class: 'function', action: 'log' },
-            { text: '1', class: '', action: 'number', value: '1' },
-            { text: '2', class: '', action: 'number', value: '2' },
-            { text: '3', class: '', action: 'number', value: '3' },
-            { text: '+', class: 'operator', action: 'operator', value: '+' },
-            { text: 'ln', class: 'function', action: 'ln' },
-            { text: 'log₂', class: 'function', action: 'log2' },
-            { text: 'EXP', class: 'function', action: 'exp' },
-           
-            { text: 'x!', class: 'function', action: 'factorial' },
-            { text: 'Rand', class: 'function', action: 'random' },
-            { text: 'EE', class: 'function', action: 'scientific' },
-            { text: '0', class: '', action: 'number', value: '0' },
-            { text: '.', class: '', action: 'decimal' },
-            { text: '±', class: 'function', action: 'plusMinus' },
-            { text: '=', class: 'equals', action: 'equals' },
-            { text: 'mod', class: 'function', action: 'mod' }
+            // Row 1
+            { text: '2nd', class: 'mode', action: 'secondFunction', category: 'advanced' },
+            { text: 'π', class: 'const', action: 'pi', category: 'advanced' },
+            { text: 'e', class: 'const', action: 'e', category: 'advanced' },
+            { text: 'eˣ', class: 'function', action: 'ePower', category: 'advanced' },
+            { text: 'x!', class: 'function', action: 'factorial', category: 'advanced' },
+            { text: 'C', class: 'clear', action: 'clear', category: 'basic' },
+            { text: 'CE', class: 'clear', action: 'clearEntry', category: 'basic' },
+            { text: '⌫', class: 'clear', action: 'backspace', category: 'basic' },
+            { text: '%', class: 'operator', action: 'percent', category: 'basic' },
+            { text: '÷', class: 'operator', action: 'operator', value: '/', category: 'basic' },
+
+            // Row 2
+            { text: 'sin', class: 'function', action: 'sin', category: 'advanced' },
+            { text: 'cos', class: 'function', action: 'cos', category: 'advanced' },
+            { text: 'tan', class: 'function', action: 'tan', category: 'advanced' },
+            { text: '√', class: 'function', action: 'sqrt', category: 'advanced' },
+            { text: '10ˣ', class: 'function', action: 'tenPower', category: 'advanced' },
+            { text: '7', class: 'number', action: 'number', value: '7', category: 'basic' },
+            { text: '8', class: 'number', action: 'number', value: '8', category: 'basic' },
+            { text: '9', class: 'number', action: 'number', value: '9', category: 'basic' },
+            { text: '×', class: 'operator', action: 'operator', value: '*', category: 'basic' },
+            { text: '(', class: 'operator', action: 'parenthesis', value: '(', category: 'basic' },
+
+            // Row 3
+            { text: 'sin⁻¹', class: 'function', action: 'asin', category: 'advanced' },
+            { text: 'cos⁻¹', class: 'function', action: 'acos', category: 'advanced' },
+            { text: 'tan⁻¹', class: 'function', action: 'atan', category: 'advanced' },
+            { text: '∛', class: 'function', action: 'cbrt', category: 'advanced' },
+            { text: 'xʸ', class: 'function', action: 'power', value: '^', category: 'advanced' },
+            { text: '4', class: 'number', action: 'number', value: '4', category: 'basic' },
+            { text: '5', class: 'number', action: 'number', value: '5', category: 'basic' },
+            { text: '6', class: 'number', action: 'number', value: '6', category: 'basic' },
+            { text: '-', class: 'operator', action: 'operator', value: '-', category: 'basic' },
+            { text: ')', class: 'operator', action: 'parenthesis', value: ')', category: 'basic' },
+
+            // Row 4
+            { text: 'sinh', class: 'function', action: 'sinh', category: 'advanced' },
+            { text: 'cosh', class: 'function', action: 'cosh', category: 'advanced' },
+            { text: 'tanh', class: 'function', action: 'tanh', category: 'advanced' },
+            { text: '1/x', class: 'function', action: 'reciprocal', category: 'advanced' },
+            { text: '|x|', class: 'function', action: 'abs', category: 'advanced' },
+            { text: '1', class: 'number', action: 'number', value: '1', category: 'basic' },
+            { text: '2', class: 'number', action: 'number', value: '2', category: 'basic' },
+            { text: '3', class: 'number', action: 'number', value: '3', category: 'basic' },
+            { text: '+', class: 'operator', action: 'operator', value: '+', category: 'basic' },
+            { text: '±', class: 'operator', action: 'plusMinus', category: 'basic' },
+
+            // Row 5
+            { text: 'log', class: 'function', action: 'log', category: 'advanced' },
+            { text: 'ln', class: 'function', action: 'ln', category: 'advanced' },
+            { text: 'log₂', class: 'function', action: 'log2', category: 'advanced' },
+            { text: 'EXP', class: 'function', action: 'exp', category: 'advanced' },
+            { text: 'Rand', class: 'function', action: 'random', category: 'advanced' },
+            { text: '0', class: 'number', action: 'number', value: '0', category: 'basic' },
+            { text: '.', class: 'number', action: 'decimal', category: 'basic' },
+            { text: '=', class: 'equals', action: 'equals', category: 'basic' },
+
+            // Extra Advanced (Visible only in scientific mode)
+            { text: 'mod', class: 'function', action: 'mod', category: 'advanced' },
+            { text: 'EE', class: 'function', action: 'scientific', category: 'advanced' },
+            { text: 'ANS', class: 'memory', action: 'answer', category: 'advanced' },
+            { text: 'MC', class: 'memory', action: 'memoryClear', category: 'advanced' },
+            { text: 'MR', class: 'memory', action: 'memoryRecall', category: 'advanced' },
+            { text: 'M+', class: 'memory', action: 'memoryAdd', category: 'advanced' },
+            { text: 'M-', class: 'memory', action: 'memorySubtract', category: 'advanced' },
+            { text: 'MS', class: 'memory', action: 'memoryStore', category: 'advanced' },
+            { text: 'x²', class: 'function', action: 'power', value: '2', category: 'advanced' },
+            { text: 'x³', class: 'function', action: 'power', value: '3', category: 'advanced' }
         ];
        
         function createButtons() {
             buttonsContainer.innerHTML = '';
-            buttonConfig.forEach(button => {
+            
+            // Filter buttons based on mode
+            const visibleButtons = isScientificMode 
+                ? buttonConfig 
+                : buttonConfig.filter(b => b.category === 'basic');
+            
+            visibleButtons.forEach(button => {
                 const buttonElement = document.createElement('button');
-                buttonElement.className = `btn ${button.class}`;
+                buttonElement.className = `btn ${button.class} ${button.category}`;
                 buttonElement.textContent = button.text;
                 buttonElement.dataset.action = button.action;
                 if (button.value) buttonElement.dataset.value = button.value;
                
                 buttonsContainer.appendChild(buttonElement);
             });
+
+            // Update container class for styling
+            if (isScientificMode) {
+                buttonsContainer.classList.remove('basic-mode');
+                buttonsContainer.classList.add('scientific-mode');
+            } else {
+                buttonsContainer.classList.remove('scientific-mode');
+                buttonsContainer.classList.add('basic-mode');
+            }
         }
        
         function inputNumber(num) {
@@ -270,18 +225,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
        
         function calculateEquals() {
-            const inputValue = parseFloat(calculator.displayValue);
-           
-            if (calculator.firstOperand !== null && calculator.operator) {
-                const result = performCalculation(calculator.firstOperand, inputValue, calculator.operator);
-                calculator.displayValue = String(result);
+            try {
+                if (!calculator.expression) return;
+                
+                // Replace visual operators with math.js compatible ones
+                let evalExpr = calculator.expression
+                    .replace(/×/g, '*')
+                    .replace(/÷/g, '/')
+                    .replace(/π/g, 'pi')
+                    .replace(/e/g, 'e');
+                
+                const result = math.evaluate(evalExpr);
+                const formattedResult = math.format(result, { precision: 14, upperExp: 10, lowerExp: -10 });
+                
+                calculator.displayValue = String(formattedResult);
+                addToHistory(calculator.expression, formattedResult);
                 calculator.previousAnswer = result;
-                addToHistory(`${calculator.firstOperand} ${calculator.operator} ${inputValue}`, result);
                 calculator.firstOperand = null;
                 calculator.operator = null;
-                calculator.waitingForSecondOperand = false;
-                calculator.expression = String(result);
+                calculator.waitingForSecondOperand = true;
+                calculator.expression = String(formattedResult);
                 updateDisplay();
+                showNotification('Calculation complete', 'success');
+            } catch (error) {
+                showNotification('Invalid Expression', 'error');
+                console.error(error);
             }
         }
        
@@ -320,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
            
             calculator.history.unshift(historyItem);
             if (calculator.history.length > 50) calculator.history.pop();
-           
+            localStorage.setItem('calcHistory', JSON.stringify(calculator.history));
             updateHistoryDisplay();
         }
        
@@ -369,8 +337,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     case 'clear':
                         clearCalculator();
                         break;
+                    case 'clearEntry':
+                        backspace();
+                        break;
                     case 'backspace':
                         backspace();
+                        break;
+                    case 'parenthesis':
+                        calculator.expression += value;
+                        updateDisplay();
                         break;
                     case 'decimal':
                         if (!calculator.displayValue.includes('.')) {
@@ -380,82 +355,149 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         break;
                     case 'pi':
-                        calculator.displayValue = Math.PI.toString();
-                        calculator.expression = 'π';
+                        calculator.expression += 'π';
                         updateDisplay();
                         break;
                     case 'e':
-                        calculator.displayValue = Math.E.toString();
-                        calculator.expression = 'e';
+                        calculator.expression += 'e';
+                        updateDisplay();
+                        break;
+                    case 'power':
+                        calculator.expression += value === '^' ? '^' : '^' + value;
+                        updateDisplay();
+                        break;
+                    case 'tenPower':
+                        calculator.expression += '10^';
+                        updateDisplay();
+                        break;
+                    case 'ePower':
+                        calculator.expression += 'e^';
                         updateDisplay();
                         break;
                     case 'sqrt':
-                        const sqrtValue = Math.sqrt(parseFloat(calculator.displayValue));
-                        calculator.displayValue = sqrtValue.toString();
-                        calculator.expression = `√(${calculator.expression}) = ${sqrtValue}`;
+                        calculator.expression += 'sqrt(';
+                        updateDisplay();
+                        break;
+                    case 'cbrt':
+                        calculator.expression += 'cbrt(';
+                        updateDisplay();
+                        break;
+                    case 'reciprocal':
+                        calculator.expression += '1/(';
+                        updateDisplay();
+                        break;
+                    case 'abs':
+                        calculator.expression += 'abs(';
                         updateDisplay();
                         break;
                     case 'sin':
-                        const angle = parseFloat(calculator.displayValue);
-                        const radians = window.calculatorAngleMode === 'deg' ? angle * Math.PI / 180 : angle;
-                        const sinValue = Math.sin(radians);
-                        calculator.displayValue = sinValue.toString();
-                        calculator.expression = `sin(${angle}) = ${sinValue}`;
+                        calculator.expression += isSecondFunction ? 'asin(' : 'sin(';
                         updateDisplay();
                         break;
                     case 'cos':
-                        const angle2 = parseFloat(calculator.displayValue);
-                        const radians2 = window.calculatorAngleMode === 'deg' ? angle2 * Math.PI / 180 : angle2;
-                        const cosValue = Math.cos(radians2);
-                        calculator.displayValue = cosValue.toString();
-                        calculator.expression = `cos(${angle2}) = ${cosValue}`;
+                        calculator.expression += isSecondFunction ? 'acos(' : 'cos(';
                         updateDisplay();
                         break;
                     case 'tan':
-                        const angle3 = parseFloat(calculator.displayValue);
-                        const radians3 = window.calculatorAngleMode === 'deg' ? angle3 * Math.PI / 180 : angle3;
-                        const tanValue = Math.tan(radians3);
-                        calculator.displayValue = tanValue.toString();
-                        calculator.expression = `tan(${angle3}) = ${tanValue}`;
+                        calculator.expression += isSecondFunction ? 'atan(' : 'tan(';
+                        updateDisplay();
+                        break;
+                    case 'sinh':
+                        calculator.expression += isSecondFunction ? 'asinh(' : 'sinh(';
+                        updateDisplay();
+                        break;
+                    case 'cosh':
+                        calculator.expression += isSecondFunction ? 'acosh(' : 'cosh(';
+                        updateDisplay();
+                        break;
+                    case 'tanh':
+                        calculator.expression += isSecondFunction ? 'atanh(' : 'tanh(';
                         updateDisplay();
                         break;
                     case 'log':
-                        const logValue = Math.log10(parseFloat(calculator.displayValue));
-                        calculator.displayValue = logValue.toString();
-                        calculator.expression = `log(${calculator.displayValue}) = ${logValue}`;
+                        calculator.expression += 'log10(';
+                        updateDisplay();
+                        break;
+                    case 'log2':
+                        calculator.expression += 'log2(';
                         updateDisplay();
                         break;
                     case 'ln':
-                        const lnValue = Math.log(parseFloat(calculator.displayValue));
-                        calculator.displayValue = lnValue.toString();
-                        calculator.expression = `ln(${calculator.displayValue}) = ${lnValue}`;
+                        calculator.expression += 'log(';
+                        updateDisplay();
+                        break;
+                    case 'exp':
+                        calculator.expression += 'exp(';
                         updateDisplay();
                         break;
                     case 'factorial':
-                        const num = parseInt(calculator.displayValue);
-                        let fact = 1;
-                        for (let i = 2; i <= num; i++) fact *= i;
-                        calculator.displayValue = fact.toString();
-                        calculator.expression = `${num}! = ${fact}`;
+                        calculator.expression += '!';
                         updateDisplay();
                         break;
                     case 'random':
-                        const randomValue = Math.random();
-                        calculator.displayValue = randomValue.toString();
-                        calculator.expression = `Random = ${randomValue}`;
+                        calculator.expression += 'random()';
+                        updateDisplay();
+                        break;
+                    case 'scientific':
+                        calculator.expression += ' * 10^';
                         updateDisplay();
                         break;
                     case 'plusMinus':
-                        const currentValue = parseFloat(calculator.displayValue);
-                        calculator.displayValue = (-currentValue).toString();
-                        calculator.expression = `-(${currentValue}) = ${-currentValue}`;
+                        if (calculator.expression === '0' || calculator.expression === '') {
+                            calculator.expression = '-';
+                        } else if (calculator.expression.startsWith('-')) {
+                            calculator.expression = calculator.expression.substring(1);
+                        } else {
+                            calculator.expression = '-' + (calculator.expression.includes(' ') ? '(' + calculator.expression + ')' : calculator.expression);
+                        }
                         updateDisplay();
                         break;
                     case 'percent':
-                        const percentValue = parseFloat(calculator.displayValue) / 100;
-                        calculator.displayValue = percentValue.toString();
-                        calculator.expression = `${calculator.displayValue}% = ${percentValue}`;
+                        calculator.expression += '%';
                         updateDisplay();
+                        break;
+                    case 'mod':
+                        calculator.expression += ' mod ';
+                        updateDisplay();
+                        break;
+                    case 'answer':
+                        calculator.expression += calculator.previousAnswer || 0;
+                        updateDisplay();
+                        break;
+                    case 'memoryClear':
+                        calculator.memory = 0;
+                        showNotification('Memory Cleared', 'info');
+                        break;
+                    case 'memoryRecall':
+                        calculator.expression += calculator.memory || 0;
+                        updateDisplay();
+                        break;
+                    case 'memoryAdd':
+                        try {
+                            const val = math.evaluate(calculator.expression);
+                            calculator.memory = (calculator.memory || 0) + val;
+                            showNotification('Added to Memory', 'info');
+                        } catch(e) { showNotification('Invalid expression', 'error'); }
+                        break;
+                    case 'memorySubtract':
+                        try {
+                            const val = math.evaluate(calculator.expression);
+                            calculator.memory = (calculator.memory || 0) - val;
+                            showNotification('Subtracted from Memory', 'info');
+                        } catch(e) { showNotification('Invalid expression', 'error'); }
+                        break;
+                    case 'memoryStore':
+                        try {
+                            const val = math.evaluate(calculator.expression);
+                            calculator.memory = val;
+                            showNotification('Stored in Memory', 'info');
+                        } catch(e) { showNotification('Invalid expression', 'error'); }
+                        break;
+                    case 'secondFunction':
+                        isSecondFunction = !isSecondFunction;
+                        const secondBtn = buttonsContainer.querySelector('[data-action="secondFunction"]');
+                        if (secondBtn) secondBtn.classList.toggle('active', isSecondFunction);
+                        showNotification(isSecondFunction ? '2nd Function Active' : '2nd Function Inactive', 'info');
                         break;
                 }
             });
@@ -483,14 +525,29 @@ document.addEventListener('DOMContentLoaded', function() {
                         calculator.expression += '.';
                         updateDisplay();
                     }
+                } else if (e.key === '(' || e.key === ')') {
+                    calculator.expression += e.key;
+                    updateDisplay();
                 }
             });
            
             clearHistoryButton.addEventListener('click', () => {
                 calculator.history = [];
+                localStorage.removeItem('calcHistory');
                 updateHistoryDisplay();
                 showNotification('History cleared', 'success');
             });
+
+            // Scientific Toggle Listener
+            const toggleBtn = document.getElementById('toggleScientific');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    isScientificMode = !isScientificMode;
+                    toggleBtn.classList.toggle('active', isScientificMode);
+                    createButtons();
+                    showNotification(isScientificMode ? 'Scientific Mode Enabled' : 'Basic Mode Enabled', 'info');
+                });
+            }
         }
        
         setupCalculatorEvents();
@@ -631,53 +688,83 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.matrix-op-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const op = e.target.closest('.matrix-op-btn').dataset.op;
-               
-                switch(op) {
-                    case 'add':
-                        addMatrices();
-                        break;
-                    case 'subtract':
-                        if (rowsA !== rowsB || colsA !== colsB) {
-                            matrixResult.innerHTML = '<pre>Error: Matrices must have same dimensions</pre>';
-                            return;
-                        }
-                        const subResult = [];
-                        for (let i = 0; i < rowsA; i++) {
-                            subResult[i] = [];
-                            for (let j = 0; j < colsA; j++) {
-                                subResult[i][j] = matrixA[i][j] - matrixB[i][j];
-                            }
-                        }
-                        displayMatrixResult('A - B =', subResult);
-                        break;
-                    case 'multiply':
-                        multiplyMatrices();
-                        break;
-                    case 'transposeA':
-                        transposeMatrix(matrixA, rowsA, colsA, 'A');
-                        break;
-                    case 'transposeB':
-                        transposeMatrix(matrixB, rowsB, colsB, 'B');
-                        break;
-                    case 'determinantA':
-                        calculateDeterminant(matrixA, rowsA, colsA, 'A');
-                        break;
-                    case 'determinantB':
-                        calculateDeterminant(matrixB, rowsB, colsB, 'B');
-                        break;
-                    case 'scalarA':
-                        const scalar = parseFloat(document.getElementById('scalarValue').value);
-                        const scalarResultA = matrixA.map(row => row.map(val => val * scalar));
-                        displayMatrixResult(`${scalar} × A =`, scalarResultA);
-                        break;
-                    case 'scalarB':
-                        const scalar2 = parseFloat(document.getElementById('scalarValue').value);
-                        const scalarResultB = matrixB.map(row => row.map(val => val * scalar2));
-                        displayMatrixResult(`${scalar2} × B =`, scalarResultB);
-                        break;
+                
+                try {
+                    switch(op) {
+                        case 'add':
+                            if (rowsA !== rowsB || colsA !== colsB) throw new Error('Matrices must have same dimensions');
+                            displayMatrixResult('A + B =', math.add(matrixA, matrixB));
+                            break;
+                        case 'subtract':
+                            if (rowsA !== rowsB || colsA !== colsB) throw new Error('Matrices must have same dimensions');
+                            displayMatrixResult('A - B =', math.subtract(matrixA, matrixB));
+                            break;
+                        case 'multiply':
+                            if (colsA !== rowsB) throw new Error('Columns of A must equal rows of B');
+                            displayMatrixResult('A × B =', math.multiply(matrixA, matrixB));
+                            break;
+                        case 'transposeA':
+                            displayMatrixResult('Aᵀ =', math.transpose(matrixA));
+                            break;
+                        case 'transposeB':
+                            displayMatrixResult('Bᵀ =', math.transpose(matrixB));
+                            break;
+                        case 'inverseA':
+                            if (rowsA !== colsA) throw new Error('Matrix A must be square');
+                            displayMatrixResult('A⁻¹ =', math.inv(matrixA));
+                            break;
+                        case 'inverseB':
+                            if (rowsB !== colsB) throw new Error('Matrix B must be square');
+                            displayMatrixResult('B⁻¹ =', math.inv(matrixB));
+                            break;
+                        case 'determinantA':
+                            if (rowsA !== colsA) throw new Error('Matrix A must be square');
+                            const detA = math.det(matrixA);
+                            matrixResult.innerHTML = `<pre>det(A) = ${math.format(detA, {precision: 6})}</pre>`;
+                            break;
+                        case 'determinantB':
+                            if (rowsB !== colsB) throw new Error('Matrix B must be square');
+                            const detB = math.det(matrixB);
+                            matrixResult.innerHTML = `<pre>det(B) = ${math.format(detB, {precision: 6})}</pre>`;
+                            break;
+                        case 'eigenA':
+                            if (rowsA !== colsA) throw new Error('Matrix A must be square');
+                            const eigenA = math.eigs(matrixA);
+                            displayEigenResult('A', eigenA);
+                            break;
+                        case 'eigenB':
+                            if (rowsB !== colsB) throw new Error('Matrix B must be square');
+                            const eigenB = math.eigs(matrixB);
+                            displayEigenResult('B', eigenB);
+                            break;
+                        case 'scalarA':
+                            const scalar = parseFloat(document.getElementById('scalarValue').value);
+                            displayMatrixResult(`${scalar} × A =`, math.multiply(matrixA, scalar));
+                            break;
+                        case 'scalarB':
+                            const scalar2 = parseFloat(document.getElementById('scalarValue').value);
+                            displayMatrixResult(`${scalar2} × B =`, math.multiply(matrixB, scalar2));
+                            break;
+                    }
+                } catch (error) {
+                    matrixResult.innerHTML = `<pre style="color: var(--danger)">Error: ${error.message}</pre>`;
+                    showNotification(error.message, 'error');
                 }
             });
         });
+
+        function displayMatrixResult(label, matrix) {
+            const formatted = math.format(matrix, { precision: 4, notation: 'fixed' });
+            matrixResult.innerHTML = `<pre>${label}\n${formatted}</pre>`;
+        }
+
+        function displayEigenResult(name, eigs) {
+            let res = `Eigenvalues of ${name}:\n`;
+            res += eigs.values.map(v => math.format(v, {precision: 4})).join(', ') + '\n\n';
+            res += `Eigenvectors of ${name}:\n`;
+            res += math.format(eigs.vectors, {precision: 4});
+            matrixResult.innerHTML = `<pre>${res}</pre>`;
+        }
        
         updateMatrixA();
         updateMatrixB();
@@ -890,119 +977,168 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
             }
-           
+            
             equationResult.innerHTML = solutionHTML;
         }
-       
+
+        document.getElementById('solveCustom').addEventListener('click', () => {
+            const eq = document.getElementById('customEquation').value;
+            if (!eq) return;
+
+            try {
+                // Simplified solver: evaluate at various points or use math.evaluate
+                // For a proper solver, we'd need a root-finding algorithm.
+                // Let's use a simple Bisection method if we can find a sign change.
+                const node = math.parse(eq.split('=')[0]);
+                const code = node.compile();
+                const f = (x) => code.evaluate({x: x});
+
+                // Find roots in range [-100, 100]
+                let roots = [];
+                for (let i = -100; i < 100; i += 0.5) {
+                    let x1 = i, x2 = i + 0.5;
+                    let y1 = f(x1), y2 = f(x2);
+                    if (y1 * y2 <= 0) {
+                        // Bisection
+                        let a = x1, b = x2;
+                        for (let j = 0; j < 20; j++) {
+                            let mid = (a + b) / 2;
+                            if (f(a) * f(mid) <= 0) b = mid;
+                            else a = mid;
+                        }
+                        roots.push((a + b) / 2);
+                    }
+                }
+
+                if (roots.length === 0) {
+                    equationResult.innerHTML = '<div class="solution-step"><strong>No Real Roots Found</strong> in range [-100, 100].</div>';
+                } else {
+                    let resultHTML = '<div class="solution-step"><strong>Custom Equation Roots:</strong><br>';
+                    roots.forEach((r, idx) => {
+                        resultHTML += `x<sub>${idx+1}</sub> = ${r.toFixed(6)}<br>`;
+                    });
+                    resultHTML += '</div>';
+                    equationResult.innerHTML = resultHTML;
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        });
+
         document.querySelector('.eq-type-btn[data-eq-type="2x2"]').click();
     }
    
     function initCalculusTools() {
         document.getElementById('calculateLimit').addEventListener('click', () => {
             const func = document.getElementById('limitFunction').value;
-            const point = document.getElementById('limitPoint').value;
+            const pointStr = document.getElementById('limitPoint').value;
             const direction = document.querySelector('.limit-dir-btn.active').dataset.direction;
            
-            let resultText = '';
-           
-            try {
-                if (func === 'sin(x)/x' && point === '0') {
-                    resultText = 'lim<sub>x→0</sub> sin(x)/x = 1';
-                } else if (func === '(x^2 - 1)/(x - 1)' && point === '1') {
-                    resultText = 'lim<sub>x→1</sub> (x² - 1)/(x - 1) = 2';
-                } else if (func === '1/x' && point === '0') {
-                    if (direction === 'left') {
-                        resultText = 'lim<sub>x→0⁻</sub> 1/x = -∞';
-                    } else if (direction === 'right') {
-                        resultText = 'lim<sub>x→0⁺</sub> 1/x = ∞';
-                    } else {
-                        resultText = 'lim<sub>x→0</sub> 1/x does not exist (different left and right limits)';
-                    }
-                } else {
-                    resultText = `lim<sub>x→${point}</sub> ${func} - Symbolic calculation required`;
-                }
-            } catch (error) {
-                resultText = `Error evaluating limit: ${error.message}`;
+            let point;
+            if (pointStr.toLowerCase() === 'inf' || pointStr === '∞') point = Infinity;
+            else if (pointStr.toLowerCase() === '-inf' || pointStr === '-∞') point = -Infinity;
+            else point = parseFloat(pointStr);
+
+            if (isNaN(point) && point !== Infinity && point !== -Infinity) {
+                showNotification('Invalid limit point', 'error');
+                return;
             }
-           
-            document.getElementById('limitResult').innerHTML = `
-                <div class="solution-step">
-                    <strong>Limit Result:</strong><br>
-                    ${resultText}
-                </div>
-            `;
+
+            try {
+                const node = math.parse(func);
+                const code = node.compile();
+               
+                const evaluateAt = (x) => {
+                    try { return code.evaluate({x: x}); } catch(e) { return NaN; }
+                };
+
+                let result;
+                if (point === Infinity) {
+                    result = evaluateAt(1e10);
+                } else if (point === -Infinity) {
+                    result = evaluateAt(-1e10);
+                } else {
+                    const eps = [1e-3, 1e-6, 1e-9];
+                    let leftLimits = eps.map(e => evaluateAt(point - e));
+                    let rightLimits = eps.map(e => evaluateAt(point + e));
+                   
+                    if (direction === 'left') result = leftLimits[2];
+                    else if (direction === 'right') result = rightLimits[2];
+                    else {
+                        const left = leftLimits[2];
+                        const right = rightLimits[2];
+                        if (Math.abs(left - right) < 1e-4) result = (left + right) / 2;
+                        else result = 'Limit does not exist (left and right limits differ)';
+                    }
+                }
+
+                document.getElementById('limitResult').innerHTML = `
+                    <div class="solution-step">
+                        <strong>Limit Result:</strong><br>
+                        lim<sub>x→${pointStr}</sub> ${func} = ${typeof result === 'number' ? result.toFixed(6) : result}
+                    </div>
+                `;
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
         });
        
         document.getElementById('calculateDerivative').addEventListener('click', () => {
             const func = document.getElementById('derivativeFunction').value;
+            const variable = document.getElementById('derivativeVar').value || 'x';
             const order = parseInt(document.getElementById('derivativeOrder').value);
            
-            let derivative = '';
-           
-            if (func === 'x^2') {
-                derivative = order === 1 ? '2x' : order === 2 ? '2' : '0';
-            } else if (func === 'x^3') {
-                derivative = order === 1 ? '3x²' : order === 2 ? '6x' : order === 3 ? '6' : '0';
-            } else if (func === 'sin(x)') {
-                if (order % 4 === 1) derivative = 'cos(x)';
-                else if (order % 4 === 2) derivative = '-sin(x)';
-                else if (order % 4 === 3) derivative = '-cos(x)';
-                else derivative = 'sin(x)';
-            } else if (func === 'cos(x)') {
-                if (order % 4 === 1) derivative = '-sin(x)';
-                else if (order % 4 === 2) derivative = '-cos(x)';
-                else if (order % 4 === 3) derivative = 'sin(x)';
-                else derivative = 'cos(x)';
-            } else if (func === 'e^x') {
-                derivative = 'e^x';
-            } else if (func === 'ln(x)') {
-                derivative = order === 1 ? '1/x' : order === 2 ? '-1/x²' : '...';
-            } else {
-                derivative = 'Use math.js for complex derivatives';
+            try {
+                let derivative = func;
+                for (let i = 0; i < order; i++) {
+                    derivative = math.derivative(derivative, variable).toString();
+                }
+
+                document.getElementById('derivativeResult').innerHTML = `
+                    <div class="solution-step">
+                        <strong>Derivative Result:</strong><br>
+                        ${order === 1 ? 'd' : 'd' + '^' + order}/${order === 1 ? 'd' + variable : 'd' + variable + '^' + order} (${func}) = ${derivative}
+                    </div>
+                `;
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
             }
-           
-            document.getElementById('derivativeResult').innerHTML = `
-                <div class="solution-step">
-                    <strong>Derivative:</strong><br>
-                    ${order === 1 ? 'd' : 'd' + '^' + order}/${order === 1 ? 'dx' : 'dx^' + order} (${func}) = ${derivative}
-                </div>
-            `;
         });
        
         document.getElementById('calculateIntegral').addEventListener('click', () => {
             const func = document.getElementById('integralFunction').value;
             const from = parseFloat(document.getElementById('integralFrom').value);
             const to = parseFloat(document.getElementById('integralTo').value);
+            const variable = document.getElementById('integralVar').value || 'x';
            
-            let integral = 0;
-            let antiderivative = '';
-           
-            if (func === 'x^2') {
-                antiderivative = 'x³/3';
-                integral = (Math.pow(to, 3) - Math.pow(from, 3)) / 3;
-            } else if (func === 'x') {
-                antiderivative = 'x²/2';
-                integral = (to*to - from*from) / 2;
-            } else if (func === 'sin(x)') {
-                antiderivative = '-cos(x)';
-                integral = -Math.cos(to) + Math.cos(from);
-            } else if (func === 'cos(x)') {
-                antiderivative = 'sin(x)';
-                integral = Math.sin(to) - Math.sin(from);
-            } else if (func === 'e^x') {
-                antiderivative = 'e^x';
-                integral = Math.exp(to) - Math.exp(from);
-            } else {
-                antiderivative = 'Complex integral';
-                integral = 'N/A';
+            try {
+                const node = math.parse(func);
+                const code = node.compile();
+               
+                // Simpson's Rule
+                const n = 1000;
+                const h = (to - from) / n;
+                let sum = code.evaluate({[variable]: from}) + code.evaluate({[variable]: to});
+
+                for (let i = 1; i < n; i++) {
+                    const x = from + i * h;
+                    sum += (i % 2 === 0 ? 2 : 4) * code.evaluate({[variable]: x});
+                }
+
+                const result = (h / 3) * sum;
+
+                document.getElementById('integralResult').innerHTML = `
+                    <div class="solution-step">
+                        <strong>Integral Result:</strong><br>
+                        ∫<sub>${from}</sub><sup>${to}</sup> ${func} d${variable} ≈ ${result.toFixed(6)}
+                    </div>
+                    <div class="solution-step">
+                        <small>Calculated using Simpson's Rule (n=1000)</small>
+                    </div>
+                `;
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
             }
-           
-            document.getElementById('integralResult').innerHTML = `
-                <div class="solution-step">
-                    <strong>Integral:</strong><br>
-                    ∫<sub>${from}</sub><sup>${to}</sup> ${func} dx = ${antiderivative} |<sub>${from}</sub><sup>${to}</sup> = ${typeof integral === 'number' ? integral.toFixed(4) : integral}
-                </div>
-            `;
         });
     }
    
@@ -1129,14 +1265,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 const k = parseInt(document.getElementById('binomK').value);
                 const prob = math.combinations(n, k) * Math.pow(p, k) * Math.pow(1-p, n-k);
                 result = `P(X = ${k}) = ${prob.toFixed(6)}`;
+            } else if (dist === 'poisson') {
+                const lambda = parseFloat(document.getElementById('poissonLambda').value);
+                const k = parseInt(document.getElementById('poissonK').value);
+                const prob = (Math.pow(lambda, k) * Math.exp(-lambda)) / math.factorial(k);
+                result = `P(X = ${k}) = ${prob.toFixed(6)}`;
+            } else if (dist === 'uniform') {
+                const a = parseFloat(document.getElementById('uniformA').value);
+                const b = parseFloat(document.getElementById('uniformB').value);
+                const x = parseFloat(document.getElementById('uniformX').value);
+                if (x < a || x > b) result = 'f(x) = 0 (outside range [a, b])';
+                else result = `f(x) = ${ (1 / (b - a)).toFixed(6) } (within range [a, b])`;
             }
            
             document.getElementById('probabilityResult').innerHTML = result;
         });
        
         document.getElementById('probabilityDist').addEventListener('change', (e) => {
-            document.getElementById('normalParams').style.display = e.target.value === 'normal' ? 'block' : 'none';
-            document.getElementById('binomialParams').style.display = e.target.value === 'binomial' ? 'block' : 'none';
+            const val = e.target.value;
+            document.getElementById('normalParams').style.display = val === 'normal' ? 'block' : 'none';
+            document.getElementById('binomialParams').style.display = val === 'binomial' ? 'block' : 'none';
+            document.getElementById('poissonParams').style.display = val === 'poisson' ? 'block' : 'none';
+            document.getElementById('uniformParams').style.display = val === 'uniform' ? 'block' : 'none';
         });
     }
    
@@ -1227,6 +1377,279 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
    
+    function initGraphing() {
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const sidebar = document.getElementById('graphSidebar');
+        const closeBtn = document.getElementById('closeSidebar');
+        const openBtn = document.getElementById('openSidebar');
+        let chart;
+
+        if (closeBtn && openBtn && sidebar) {
+            closeBtn.addEventListener('click', () => {
+                sidebar.classList.add('collapsed');
+                openBtn.style.display = 'flex';
+                // Trigger chart resize after animation
+                setTimeout(() => { if (chart) chart.resize(); }, 450);
+            });
+
+            openBtn.addEventListener('click', () => {
+                sidebar.classList.remove('collapsed');
+                openBtn.style.display = 'none';
+                // Trigger chart resize after animation
+                setTimeout(() => { if (chart) chart.resize(); }, 450);
+            });
+        }
+
+        const colors = [
+            { border: '#111111', bg: 'rgba(17, 17, 17, 0.05)' }, // f1: black
+            { border: '#666666', bg: 'rgba(102, 102, 102, 0.05)' }, // f2: grey
+            { border: '#999999', bg: 'rgba(153, 153, 153, 0.05)' }  // f3: light grey
+        ];
+
+        document.getElementById('plotGraph').addEventListener('click', () => {
+            const f1 = document.getElementById('graphFunction').value;
+            const f2 = document.getElementById('graphFunction2').value;
+            const f3 = document.getElementById('graphFunction3').value;
+            const xMin = parseFloat(document.getElementById('graphXMin').value) || -10;
+            const xMax = parseFloat(document.getElementById('graphXMax').value) || 10;
+            const yMin = parseFloat(document.getElementById('graphYMin').value) || -10;
+            const yMax = parseFloat(document.getElementById('graphYMax').value) || 10;
+            const userStep = parseFloat(document.getElementById('graphStep').value) || 0.1;
+
+            const funcs = [f1, f2, f3].filter(f => f.trim() !== '');
+            const datasets = [];
+
+            try {
+                funcs.forEach((func, idx) => {
+                    const node = math.parse(func);
+                    const code = node.compile();
+                    const data = [];
+                    
+                    for (let x = xMin; x <= xMax; x += userStep) {
+                        try {
+                            const y = code.evaluate({x: x});
+                            if (typeof y === 'number' && isFinite(y)) {
+                                data.push({x: x, y: y});
+                            } else {
+                                data.push({x: x, y: null});
+                            }
+                        } catch (e) {
+                            data.push({x: x, y: null});
+                        }
+                    }
+
+                    datasets.push({
+                        label: `f${idx+1}(x) = ${func}`,
+                        data: data,
+                        borderColor: colors[idx].border,
+                        backgroundColor: colors[idx].bg,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: false,
+                        tension: 0.1,
+                        showLine: true
+                    });
+                });
+
+                if (chart) chart.destroy();
+                
+                const style = getComputedStyle(document.documentElement);
+                const textColor = style.getPropertyValue('--text-primary').trim() || '#111111';
+                const gridColor = 'rgba(173, 216, 230, 0.4)'; // light blue grid
+                const axisColor = '#333333';
+
+                // Custom plugin for arrows and labels
+                const axisArrows = {
+                    id: 'axisArrows',
+                    afterDraw: (chart) => {
+                        const {ctx, chartArea: {top, bottom, left, right}, scales: {x, y}} = chart;
+                        ctx.save();
+                        ctx.strokeStyle = axisColor;
+                        ctx.fillStyle = axisColor;
+                        ctx.lineWidth = 2;
+
+                        const drawArrow = (ax, ay, angle) => {
+                            ctx.save();
+                            ctx.translate(ax, ay);
+                            ctx.rotate(angle);
+                            ctx.beginPath();
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(-8, -4);
+                            ctx.lineTo(-8, 4);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.restore();
+                        };
+
+                        const y0 = y.getPixelForValue(0);
+                        const x0 = x.getPixelForValue(0);
+
+                        // Draw X-axis
+                        if (y0 >= top && y0 <= bottom) {
+                            ctx.beginPath();
+                            ctx.moveTo(left, y0);
+                            ctx.lineTo(right, y0);
+                            ctx.stroke();
+                            drawArrow(right, y0, 0);
+                            drawArrow(left, y0, Math.PI);
+                            ctx.font = 'bold 12px Inter';
+                            ctx.fillText('x', right - 10, y0 + 15);
+                        }
+
+                        // Draw Y-axis
+                        if (x0 >= left && x0 <= right) {
+                            ctx.beginPath();
+                            ctx.moveTo(x0, top);
+                            ctx.lineTo(x0, bottom);
+                            ctx.stroke();
+                            drawArrow(x0, top, -Math.PI/2);
+                            drawArrow(x0, bottom, Math.PI/2);
+                            ctx.font = 'bold 12px Inter';
+                            ctx.fillText('y', x0 + 10, top + 10);
+                        }
+                        ctx.restore();
+                    }
+                };
+
+                chart = new Chart(ctx, {
+                    type: 'scatter',
+                    data: { datasets },
+                    plugins: [axisArrows],
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: 0 },
+                        scales: {
+                            x: { 
+                                type: 'linear',
+                                position: 'center',
+                                grid: { color: gridColor, lineWidth: 1, drawBorder: false }, 
+                                ticks: { 
+                                    color: textColor,
+                                    callback: function(value) { return value === 0 ? '' : value; }
+                                },
+                                min: xMin,
+                                max: xMax
+                            },
+                            y: { 
+                                type: 'linear',
+                                position: 'center',
+                                grid: { color: gridColor, lineWidth: 1, drawBorder: false }, 
+                                ticks: { 
+                                    color: textColor,
+                                    callback: function(value) { return value === 0 ? '' : value; }
+                                },
+                                min: yMin,
+                                max: yMax
+                            }
+                        },
+                        plugins: {
+                            legend: { 
+                                display: true,
+                                position: 'top',
+                                labels: { color: textColor, boxWidth: 12, usePointStyle: true }
+                            },
+                            tooltip: { enabled: true, mode: 'nearest', intersect: false },
+                            zoom: {
+                                pan: {
+                                    enabled: true,
+                                    mode: 'xy',
+                                    threshold: 5,
+                                },
+                                zoom: {
+                                    wheel: { enabled: true, speed: 0.1 },
+                                    pinch: { enabled: true },
+                                    mode: 'xy',
+                                },
+                                limits: {
+                                    x: { min: -1000, max: 1000 },
+                                    y: { min: -1000, max: 1000 }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Reset Graph View
+                const resetBtn = document.getElementById('resetGraph');
+                if (resetBtn) {
+                    resetBtn.onclick = () => {
+                        chart.resetZoom();
+                        showNotification('View Reset', 'info');
+                    };
+                }
+
+                showNotification('Functions plotted successfully. Scroll to zoom, drag to pan!', 'success');
+            } catch (error) {
+                showNotification(`Graph Error: ${error.message}`, 'error');
+            }
+        });
+    }
+
+    function initProgrammerMode() {
+        const decInput = document.getElementById('progDec');
+        const hexDisp = document.getElementById('progHex');
+        const octDisp = document.getElementById('progOct');
+        const binDisp = document.getElementById('progBin');
+        
+        const bitA = document.getElementById('bitA');
+        const bitB = document.getElementById('bitB');
+        const bitOp = document.getElementById('bitOp');
+        const bitResult = document.getElementById('bitwiseResult');
+
+        function updateAllFromDecimal(val) {
+            decInput.value = val;
+            hexDisp.textContent = val.toString(16).toUpperCase();
+            octDisp.textContent = val.toString(8);
+            binDisp.textContent = val.toString(2);
+        }
+
+        decInput.addEventListener('input', () => {
+            const val = parseInt(decInput.value) || 0;
+            updateAllFromDecimal(val);
+        });
+
+        // Add direct base interaction (clickable/editable regions)
+        [hexDisp, octDisp, binDisp].forEach(disp => {
+            disp.style.cursor = 'pointer';
+            disp.title = 'Click to edit this value';
+            disp.addEventListener('click', () => {
+                const base = disp.id === 'progHex' ? 16 : (disp.id === 'progOct' ? 8 : 2);
+                const currentVal = disp.textContent;
+                const newValue = prompt(`Enter ${disp.id.replace('prog', '')} value:`, currentVal);
+                if (newValue !== null) {
+                    const decVal = parseInt(newValue, base);
+                    if (!isNaN(decVal)) {
+                        updateAllFromDecimal(decVal);
+                        showNotification('Base conversion updated', 'success');
+                    } else {
+                        showNotification('Invalid value for base ' + base, 'error');
+                    }
+                }
+            });
+        });
+
+        document.getElementById('calcBitwise').addEventListener('click', () => {
+            const a = parseInt(bitA.value) || 0;
+            const b = parseInt(bitB.value) || 0;
+            const op = bitOp.value;
+            let res;
+            let opChar;
+
+            switch(op) {
+                case 'and': res = a & b; opChar = '&'; break;
+                case 'or': res = a | b; opChar = '|'; break;
+                case 'xor': res = a ^ b; opChar = '^'; break;
+                case 'not': res = ~a; opChar = '~'; break;
+                case 'lsh': res = a << b; opChar = '<<'; break;
+                case 'rsh': res = a >> b; opChar = '>>'; break;
+            }
+
+            bitResult.innerHTML = op === 'not' ? `${opChar}${a} = ${res}` : `${a} ${opChar} ${b} = ${res}`;
+        });
+    }
+
     setupTabSwitching();
     setupAngleMode();
     initCalculator();
@@ -1235,4 +1658,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initCalculusTools();
     initStatisticsTools();
     initConverters();
+    initGraphing();
+    initProgrammerMode();
 });
